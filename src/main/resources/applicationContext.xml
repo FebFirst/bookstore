@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd ">
+
+       <context:component-scan base-package="com.bookstore.*"/>
+       <context:annotation-config/>
+
+
+       <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+              <property name="locations">
+                     <list>
+                            <value>classpath:DB.properties</value>
+                     </list>
+              </property>
+       </bean>
+       <!--spring aop based mysql master and slave operation-->
+       <!--<bean id="parentDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">-->
+       <!--</bean>-->
+       <!--redis-->
+       <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig" >
+              <property name="maxTotal" value="${redis.pool.maxActive}"/>
+              <property name="maxIdle" value="${redis.pool.maxIdle}"/>
+              <property name="minIdle" value="${redis.pool.minIdle}"/>
+              <property name="maxWaitMillis" value="${redis.pool.maxWait}"/>
+              <property name="testOnBorrow" value="${redis.pool.testOnBorrow}"/>
+              <property name="testOnReturn" value="${redis.pool.testOnReturn}"/>
+       </bean>
+       <bean id = "jedisPool" class="redis.clients.jedis.JedisPool">
+              <constructor-arg index="0" ref="jedisPoolConfig"/>
+              <constructor-arg index="1" value="${redis.host}"/>
+              <constructor-arg index="2" value="${redis.port}" type="int"/>
+              <constructor-arg index="3" value="${redis.timeout}" type="int"/>
+              <constructor-arg index="4" value="${redis.password}"/>
+       </bean>
+
+       <!--hibernate-->
+       <!--<bean id="dataSourceM" class="org.springframework.jdbc.datasource.DriverManagerDataSource">-->
+              <!--<property name="driverClassName" value="${master.jdbc.driverClassName}"/>-->
+              <!--<property name="url" value="${master.jdbc.uri}"/>-->
+              <!--<property name="username" value="${master.jdbc.username}"/>-->
+              <!--<property name="password" value="${master.jdbc.password}"/>-->
+       <!--</bean>-->
+
+       <!--<bean id="dataSourceS" class="org.springframework.jdbc.datasource.DriverManagerDataSource">-->
+              <!--<property name="driverClassName" value="${slave.jdbc.driverClassName}"/>-->
+              <!--<property name="url" value="${slave.jdbc.uri}"/>-->
+              <!--<property name="username" value="${slave.jdbc.username}"/>-->
+              <!--<property name="password" value="${slave.jdbc.password}"/>-->
+       <!--</bean>-->
+       <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+              <property name="driverClassName" value="${slave.jdbc.driverClassName}"/>
+              <property name="url" value="${slave.jdbc.uri}"/>
+              <property name="username" value="${slave.jdbc.username}"/>
+              <property name="password" value="${slave.jdbc.password}"/>
+       </bean>
+
+              <!--<bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">-->
+                     <!--<property name="dataSource" ref="dataSource"/>-->
+                     <!--<property name="mappingResources">-->
+                            <!--<list>-->
+                                   <!--<value>Admin.hbm.xml</value>-->
+                                   <!--<value>Customer.hbm.xml</value>-->
+                                   <!--<value>Record.hbm.xml</value>-->
+                                   <!--<value>Book.hbm.xml</value>-->
+                            <!--</list>-->
+                     <!--</property>-->
+                     <!--<property name="hibernateProperties">-->
+                            <!--<props>-->
+                                   <!--<prop key="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</prop>-->
+                                   <!--<prop key="hibernate.show_sql">true</prop>-->
+                                   <!--<prop key="connection.pool_size">1</prop>-->
+                                   <!--<prop key="hbm2ddl.auto">update</prop>-->
+                                   <!--<prop key="current_session_context_class">thread</prop>-->
+                            <!--</props>-->
+                     <!--</property>-->
+              <!--</bean>-->
+
+              <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+                     <property name="dataSource" ref="dataSource"/>
+                     <property name="mappingResources">
+                            <list>
+                                   <value>Admin.hbm.xml</value>
+                                   <value>Customer.hbm.xml</value>
+                                   <value>Record.hbm.xml</value>
+                                   <value>Book.hbm.xml</value>
+                            </list>
+                     </property>
+                     <property name="hibernateProperties">
+                            <props>
+                                   <prop key="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</prop>
+                                   <prop key="hibernate.show_sql">true</prop>
+                                   <prop key="connection.pool_size">1</prop>
+                                   <prop key="hbm2ddl.auto">update</prop>
+                                   <prop key="current_session_context_class">thread</prop>
+                            </props>
+                     </property>
+              </bean>
+
+              <!--<bean id="transactionManagerM" class="org.springframework.orm.hibernate4.HibernateTransactionManager">-->
+                     <!--<property name="sessionFactory" ref="sessionFactoryM"/>-->
+              <!--</bean>-->
+
+              <bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+                     <property name="sessionFactory" ref="sessionFactory"/>
+              </bean>
+
+              <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
+
+
+              <!--<tx:annotation-driven transaction-manager="transactionManagerM"/>-->
+              <tx:annotation-driven transaction-manager="transactionManager"/>
+
+
+
+       </beans>
+

@@ -1,5 +1,7 @@
 package com.bookstore.util;
 
+import com.bookstore.util.MySqlDaoUtil.MasterDaoSupport;
+import com.bookstore.util.MySqlDaoUtil.SlaveDaoSupport;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
@@ -8,6 +10,8 @@ import org.hibernate.cfg.Configuration;
  * Created by googo on 19/03/2017.
  */
 public class HibernateUtil {
+//    private static MasterDaoSupport masterDaoSupport = new MasterDaoSupport();
+//    private static SlaveDaoSupport slaveDaoSupport = new SlaveDaoSupport();
     private static final SessionFactory sessionFactory = buildSessionFactory();
 
     private static SessionFactory buildSessionFactory()
@@ -25,8 +29,11 @@ public class HibernateUtil {
         return sessionFactory;
     }
 
+//    public static SessionFactory getMasterSessionFactory(){return masterDaoSupport.getHibernateTemplate().getSessionFactory();}
+//    public static SessionFactory getSlaveSessionFactory(){return slaveDaoSupport.getHibernateTemplate().getSessionFactory();}
     public static boolean save(Object object){
         Session session = sessionFactory.getCurrentSession();
+//        Session session = getMasterSessionFactory().getCurrentSession();
         try
         {
             session.beginTransaction();
@@ -45,6 +52,7 @@ public class HibernateUtil {
 
     public static boolean delete(Object object){
         Session session = sessionFactory.getCurrentSession();
+//        Session session = getMasterSessionFactory().getCurrentSession();
         try{
             session.beginTransaction();
             session.delete(object);
@@ -61,6 +69,7 @@ public class HibernateUtil {
 
     public static boolean update(Object object){
         Session session = sessionFactory.getCurrentSession();
+//        Session session = getMasterSessionFactory().getCurrentSession();
         try{
             session.beginTransaction();
             session.update(object);

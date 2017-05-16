@@ -40,6 +40,7 @@ public interface Cart {
      * @return
      */
     Map<String, Integer> getBookAndNumber();
+
     /**
      * checkout the cart with a signal
      * A Signal class will be added later

@@ -3,6 +3,8 @@ package com.bookstore.controller;
 import com.bookstore.ejb.Auth;
 import com.bookstore.model.Customer;
 import com.bookstore.service.CustomerService;
+import com.bookstore.util.BKError;
+import com.bookstore.util.ResInfo;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
@@ -10,13 +12,11 @@ import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
-import javax.annotation.Resource;
+
 import javax.ejb.EJB;
 import javax.servlet.http.HttpSession;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -48,7 +48,7 @@ public class AuthController {
             subject.login(token);
             customer = customerService.getCustomerByEmail(customer.getEmail());
             session.setAttribute("user", customer);
-            res.put("msg","SUCCESS!");
+            res.put(ResInfo.InfoCode(), BKError.info(BKError.OK));
             return res;
             /**Uncomment to use simple login module*/
 //            if (auth.authLogin(customer.getEmail(), customer.getCode())) {
@@ -63,11 +63,16 @@ public class AuthController {
 //            }
         }catch (Exception e){
             e.printStackTrace();
-            res.put("msg","fail");
+            res.put(ResInfo.InfoCode(),BKError.info(BKError.INVALID));
             return res;
         }
     }
 
+    /**
+     * log out
+     * @param customer
+     * @return
+     */
     @RequiresAuthentication
     @RequestMapping(value = "/auth/logout", method = RequestMethod.POST)
     @ResponseBody
@@ -77,11 +82,11 @@ public class AuthController {
             Subject subject = SecurityUtils.getSubject();
             //UsernamePasswordToken token = new UsernamePasswordToken(customer.getEmail(), customer.getCode());
             subject.logout();
-            res.put("msg","SUCCESS!");
+            res.put(ResInfo.InfoCode(),BKError.info(BKError.OK));
             return res;
         }catch (Exception e){
             e.printStackTrace();
-            res.put("msg","fail");
+            res.put(ResInfo.InfoCode(), BKError.info(BKError.UNKNOWN));
             return res;
         }
     }

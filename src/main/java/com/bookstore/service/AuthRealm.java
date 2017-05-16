@@ -15,6 +15,8 @@ import java.util.Set;
 /**
  * Created by googo on 26/03/2017.
  *
+ * shiro auth class
+ *
  * Reference: classmate fyy;  http://www.tuicool.com/articles/AFFBre
  */
 public class AuthRealm extends AuthorizingRealm {
@@ -46,9 +48,6 @@ public class AuthRealm extends AuthorizingRealm {
         if(customer == null){
             throw new UnknownAccountException();
         }
-//        if(Boolean.TRUE.equals(Customer.getLocked())) {
-//            throw new LockedAccountException(); //帐号锁定
-//        }
         SimpleAuthenticationInfo info= new SimpleAuthenticationInfo(customer.getEmail(), customer.getCode(), getName());
         return info;
     }

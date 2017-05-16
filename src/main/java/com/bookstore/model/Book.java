@@ -1,13 +1,16 @@
 package com.bookstore.model;
 
+import java.io.Serializable;
+
 /**
  * Created by googo on 18/03/2017.
  */
-public class Book {
+public class Book implements Serializable{
     private String isbn;
     private String name;
     private double price;
     private String author;
+    private int cate;
 
     public String getIsbn() {
         return isbn;
@@ -39,5 +42,13 @@ public class Book {
 
     public void setAuthor(String author) {
         this.author = author;
+    }
+
+    public int getCate() {
+        return cate;
+    }
+
+    public void setCate(int cate) {
+        this.cate = cate;
     }
 }

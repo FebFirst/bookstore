@@ -1,15 +1,17 @@
 package com.bookstore.controller;
 
-import com.bookstore.dao.BookDAO;
 import com.bookstore.ejb.Cart;
+import com.bookstore.ejb.JMSMessageSender;
 import com.bookstore.model.Book;
 import com.bookstore.model.Customer;
 import com.bookstore.service.BookService;
 import com.bookstore.service.RecordService;
-import org.apache.shiro.SecurityUtils;
+import com.bookstore.util.BKError;
+import com.bookstore.util.JSONFormatUtil;
+import com.bookstore.util.ResInfo;
+import net.sf.json.JSONObject;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresRoles;
-import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +28,9 @@ import java.util.Map;
 public class BookController {
     @EJB(mappedName = "global/bookstore/CartEJB!com.bookstore.ejb.Cart")
     Cart cart;
+
+    @EJB(mappedName = "global/bookstore/JMSMessageSender!com.bookstore.ejb.JMSMessageSender")
+    JMSMessageSender sender;
 
     @Autowired
     BookService bookService;
@@ -47,18 +52,17 @@ public class BookController {
     public Map<String, String> addBookToCart(@PathVariable String isbn, HttpSession session){
         Map<String, String> res = new HashMap<>();
         try {
-//            if (session.getAttribute("user") == null) {
-//                res.put("msg", "NOT LOGIN!");
-//                return res;
-//            }
-
+            if(bookService.getBookByISBN(isbn) == null){
+                res.put(ResInfo.InfoCode(), BKError.info(BKError.EMPTY));
+                return res;
+            }
             cart.addBook(isbn);
-            res.put("msg", "SUCCESS!");
+            res.put(ResInfo.InfoCode(), BKError.info(BKError.OK));
             return res;
         }catch (Exception e){
             e.printStackTrace();
             res.clear();
-            res.put("msg","FAIL");
+            res.put(ResInfo.InfoCode(), BKError.info(BKError.INVALID));
             return res;
         }
     }
@@ -84,7 +88,7 @@ public class BookController {
         }catch (Exception e){
             e.printStackTrace();
             res.clear();
-            res.put("NO BOOK IN CART",0);
+            res.put(ResInfo.InfoCode(), -1);
             return res;
         }
     }
@@ -105,12 +109,12 @@ public class BookController {
 //                return res;
 //            }
             cart.checkout(1);
-            res.put("msg", "SUCCESS");
+            res.put(ResInfo.InfoCode(), BKError.info(BKError.OK));
             return res;
         }catch (Exception e){
             e.printStackTrace();
             res.clear();
-            res.put("msg", "FAIL");
+            res.put(ResInfo.InfoCode(), BKError.info(BKError.UNKNOWN));
             return res;
         }
     }
@@ -131,15 +135,15 @@ public class BookController {
 //                return res;
 //            }
             Customer customer = (Customer) session.getAttribute("user");
-
-            recordService.addRecord(cart.getBookAndNumber(), customer.getId());
+            String orderMessage = JSONFormatUtil.orderFormat(cart.getBookAndNumber(), customer.getId());
+            sender.sendMessage(orderMessage);
             cart.checkout(1);
-            res.put("msg", "SUCCESS");
+            res.put(ResInfo.InfoCode(), BKError.info(BKError.OK));
             return res;
         }catch (Exception e){
             e.printStackTrace();
             res.clear();
-            res.put("msg","FAIL");
+            res.put(ResInfo.InfoCode(), BKError.info(BKError.UNKNOWN));
             return res;
         }
     }
@@ -175,17 +179,22 @@ public class BookController {
         Map<String, String> res = new HashMap<>();
         try{
             bookService.addBook(book);
-            res.put("msg","SUCCESS!");
+            res.put(ResInfo.InfoCode(), BKError.info(BKError.OK));
+            //sender.sendMessage("You Touch My Heart Baby!");
             return res;
         }catch (Exception e){
             e.printStackTrace();
             res.clear();
-            res.put("msg","FAIL!");
+            res.put(ResInfo.InfoCode(), BKError.info(BKError.UNKNOWN));
             return res;
         }
     }
 
-
+    /**
+     * delete book, admin access only
+     * @param book
+     * @return
+     */
     @RequiresRoles(value = "admin")
     @RequestMapping(value = "/book/delete", method = RequestMethod.POST)
     @ResponseBody
@@ -193,16 +202,22 @@ public class BookController {
         Map<String, String> res = new HashMap<>();
         try{
             bookService.deleteBook(book);
-            res.put("msg","SUCCESS!");
+            res.put(ResInfo.InfoCode(), BKError.info(BKError.OK));
             return res;
         }catch (Exception e){
             e.printStackTrace();
             res.clear();
-            res.put("msg","FAIL!");
+            res.put(ResInfo.InfoCode(), BKError.info(BKError.UNKNOWN));
             return res;
         }
     }
 
+
+    /**
+     * update book's info, admin access only
+     * @param book
+     * @return
+     */
     @RequiresRoles(value = "admin")
     @RequestMapping(value = "/book/update", method = RequestMethod.POST)
     @ResponseBody
@@ -210,16 +225,21 @@ public class BookController {
         Map<String, String> res = new HashMap<>();
         try{
             bookService.updateBook(book);
-            res.put("msg","SUCCESS!");
+            res.put(ResInfo.InfoCode(), BKError.info(BKError.OK));
             return res;
         }catch (Exception e){
             e.printStackTrace();
             res.clear();
-            res.put("msg","FAIL!");
+            res.put(ResInfo.InfoCode(), BKError.info(BKError.UNKNOWN));
             return res;
         }
     }
 
+
+    /**
+     * get all books
+     * @return
+     */
     @RequiresAuthentication
     @RequestMapping(value = "/book/all", method = RequestMethod.POST)
     @ResponseBody
@@ -231,4 +251,21 @@ public class BookController {
             return null;
         }
     }
+
+    @RequiresAuthentication
+    @RequestMapping(value = "/book/detail/{isbn}", method = RequestMethod.POST)
+    @ResponseBody
+    public Object bookDetail(@PathVariable String isbn){
+        Map<String, String> res = new HashMap<>();
+        try{
+            Book book = bookService.getBookByISBN(isbn);
+            return book;
+        }catch (Exception e){
+            e.printStackTrace();
+            res.clear();
+            res.put(ResInfo.InfoCode(), BKError.info(BKError.UNKNOWN));
+            return res;
+        }
+    }
+
 }

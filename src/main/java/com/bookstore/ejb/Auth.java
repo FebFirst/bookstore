@@ -8,6 +8,14 @@ import javax.ejb.Local;
 @Local
 public interface Auth {
 
+    /**
+     * Deprecated
+     *
+     * jaas login module
+     * @param name
+     * @param code
+     * @return
+     */
     boolean authLogin(String name, String code);
 
     //boolean authCustomerLogin(String name, String code);

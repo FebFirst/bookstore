@@ -45,6 +45,7 @@ public class CustomerDAO {
 
     public Customer getCustomerByPhone(int phone){
         Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+//        Session session = HibernateUtil.getSlaveSessionFactory().getCurrentSession();
         Customer result;
         try
         {
@@ -67,6 +68,7 @@ public class CustomerDAO {
 
     public Customer getCustomerByEmail(String email){
         Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+//        Session session = HibernateUtil.getSlaveSessionFactory().getCurrentSession();
         Customer result;
         try
         {
@@ -91,6 +93,7 @@ public class CustomerDAO {
 
     public List<Customer> getCustomersByName(String name){
         Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+//        Session session = HibernateUtil.getSlaveSessionFactory().getCurrentSession();
         List<Customer> result = new ArrayList<>();
         try
         {
@@ -113,6 +116,7 @@ public class CustomerDAO {
 
     public List<Customer> getAllCustomers(){
         Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+//        Session session = HibernateUtil.getSlaveSessionFactory().getCurrentSession();
         List<Customer> result = new ArrayList<>();
         try
         {

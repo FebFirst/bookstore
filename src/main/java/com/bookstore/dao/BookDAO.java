@@ -5,6 +5,7 @@ import com.bookstore.util.HibernateUtil;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -40,6 +41,7 @@ public class BookDAO {
 
     public Book getBookByISBN(String isbn){
         Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+//        Session session = HibernateUtil.getSlaveSessionFactory().getCurrentSession();
         Book result;
         try
         {
@@ -62,6 +64,7 @@ public class BookDAO {
 
     public List<Book> getAllBooks(){
         Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+//        Session session = HibernateUtil.getSlaveSessionFactory().getCurrentSession();
         List<Book> result;
         try
         {

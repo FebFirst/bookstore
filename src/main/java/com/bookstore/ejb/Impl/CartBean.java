@@ -1,14 +1,13 @@
 package com.bookstore.ejb.Impl;
 
-import com.bookstore.dao.BookDAO;
 import com.bookstore.ejb.Cart;
-import com.bookstore.model.Book;
+import com.bookstore.service.BookService;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.ejb.Remove;
+import javax.annotation.Resource;
+import javax.ejb.MessageDriven;
 import javax.ejb.Stateful;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,10 +17,14 @@ import java.util.Map;
 @Stateful(name = "CartEJB")
 public class CartBean implements Cart {
 
-
+   // @Resource(mappedName = "")
+   // private BookService bookService;
     private Map<String, Integer> items  = new HashMap<>();
     int customer_id;
 
+    /**
+     * default book number to add
+     */
     private static final int initNumber = 1;
 
     /**
@@ -34,6 +37,7 @@ public class CartBean implements Cart {
     @Override
     public boolean initialize(int customer_id){
         try{
+           // bookService.getAllBooks();
             this.customer_id = customer_id;
             this.items = new HashMap<>();
             return true;
@@ -43,13 +47,18 @@ public class CartBean implements Cart {
         }
     }
 
+    /**
+     * add books to this stateful bean
+     * @param isbn
+     * @return
+     */
     @Override
     public boolean addBook(String isbn){
         try {
+           // bookService.getAllBooks();
             if(this.items == null){
                 this.items = new HashMap<>();
                 this.items.put(isbn, initNumber);
-                System.out.println("NIMABI");
             }
             else if (!this.items.containsKey(isbn)) {
                 this.items.put(isbn, initNumber);
@@ -80,13 +89,22 @@ public class CartBean implements Cart {
 //        }
 //    }
 
+    /**
+     * get info of this bean
+     * @return
+     */
     @Override
     public Map<String, Integer> getBookAndNumber(){
         return items;
     }
 
+    /**
+     * clean the information in this bean
+     * @param signal
+     * @return
+     */
     @Override
-    @Remove
+    //@Remove
     public boolean checkout(int signal){
         try{
             if(items != null)

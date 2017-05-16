@@ -3,6 +3,7 @@ package com.bookstore.dao;
 import com.bookstore.model.Book;
 import com.bookstore.model.Record;
 import com.bookstore.util.HibernateUtil;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
 
@@ -30,6 +31,29 @@ public class RecordDAO {
             }
         }catch (Exception e){
             e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+
+    public boolean deleteRecord(String isbn){
+        Session session = HibernateUtil.getSessionFactory().getCurrentSession();
+//        Session session = HibernateUtil.getSlaveSessionFactory().getCurrentSession();
+        try
+        {
+            session.beginTransaction();
+            Query query = session.createQuery("delete from Record where book_id = ?");
+            query.setString(0, isbn);
+            query.executeUpdate();
+            session.getTransaction().commit();
+        }
+        catch (Exception e)
+        {
+            if(session.getTransaction().wasCommitted())
+            {
+                session.getTransaction().rollback();
+            }
             return false;
         }
         return true;
